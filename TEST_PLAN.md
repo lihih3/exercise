@@ -41,6 +41,20 @@ The rules are joined by AND. For each rule, take a valid password and remove onl
 | PW-06 | `"Password!"` | `False` | Digit |
 | PW-07 | `"Passw0rd"` | `False` | Special character |
 | PW-08 | `"password!"` | `False` | Uppercase and digit (only the special-character rule is met); one rule alone must never be enough |
+| PW-25 | `"Password"` | `False` | Digit and special (upper only) |
+| PW-26 | `"passw0rd"` | `False` | Upper and special (digit only) |
+| PW-27 | `"password"` | `False` | All three |
+
+Together, PW-01 and PW-05 to PW-08 plus PW-25 to PW-27 form a **decision table** covering all 2³ = 8 combinations of upper / digit / special.
+
+### 1.3.1 Every allowed character, in any position
+| ID | Input | Expected | Why |
+|----|-------|----------|-----|
+| PW-30 | `"Passw0rd" + c` for each `c` in `!@#$%^&*` | `True` | Each allowed special character is accepted (catches a typo in the allowed list) |
+| PW-31 | `"!Passw0rd"` | `True` | Special character first |
+| PW-32 | `"P@ssw0rd"` | `True` | Special character in the middle |
+| PW-33 | `"1Password!"` | `True` | Digit first |
+| PW-34 | `"PASSW0RD!"` | `True` | No lowercase: the spec does not require it, so the code must not add that rule |
 
 ### 1.4 Special characters not on the allowed list (`!@#$%^&*`)
 | ID | Input | Expected | Why |
@@ -48,6 +62,8 @@ The rules are joined by AND. For each rule, take a valid password and remove onl
 | PW-09 | `"Passw0rd?"` | `False` | `?` is not an allowed special character |
 | PW-10 | `"Passw0rd_"` | `False` | Same check with a different character |
 | PW-11 | `"Passw0rd "` (trailing space) | `False` | A space doesn't count as a special character |
+| PW-28 | `"Passw0rd\t"` (tab) | `False` | Other whitespace doesn't count either |
+| PW-29 | `"Passw0rd\n"` (newline) | `False` | Same as PW-28 |
 
 ### 1.5 Negative: wrong type → `TypeError`
 Wrong types fall into two equivalence classes:
@@ -73,6 +89,7 @@ Wrong types fall into two equivalence classes:
 | PW-22 | `"A1!" + "a" * 1000` | `True` | Very long input |
 | PW-23 | `"Äbcdefg1!"` | ❓ | Non-ASCII uppercase; spec doesn't say whether it counts. **Open question.** |
 | PW-24 | `"Abcdefg٣!"` | ❓ | Non-ASCII digit (Arabic-Indic `٣`); Python's `isdigit()` counts it. **Open question.** |
+| PW-35 | `"Pa$s1😀😀"` | ❓ | Emoji: Python counts code points, a user counts visible characters. How is "8 characters" measured? **Open question.** |
 
 ### 1.7 Out of scope
 - Password strength beyond the policy, such as dictionary words (`"Password1!"` passes the policy).
