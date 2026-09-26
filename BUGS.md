@@ -26,7 +26,7 @@ All steps assume a Python console opened in the repository root.
 | BUG-11 | Risk level accepts scores outside 0–100 | Low |
 | BUG-12 | `max_attempts < 1` does not raise ValueError | Low |
 
-**Open question (not a bug until the spec is clarified):** `is_os_version_supported("13", "13.0")` returns `False`. Should `"13"` equal `"13.0"`?
+Behavior the spec does not define is listed separately under [Open questions](#open-questions) at the end. Those are not bugs until the product owner clarifies the spec.
 
 ---
 
@@ -175,7 +175,16 @@ RemediationEngine(executor, max_attempts=3).remediate("dev1", "fix")
 **Expected:** Returns `3`, and `apply.call_count == 3`.
 **Actual:** Raises `RemediationFailed`, and `apply.call_count == 2`.
 
-**Customer impact:** Fixes that would succeed on the last allowed attempt are reported as failed, so devices stay non-compliant and need manual work. With `max_attempts=1`, no attempt is made at all.
+The worst case is `max_attempts=1`: the engine never calls `apply` at all.
+```python
+executor = Mock()
+executor.apply.return_value = True
+RemediationEngine(executor, max_attempts=1).remediate("dev1", "fix")
+```
+**Expected:** Returns `1`, and `apply.call_count == 1`.
+**Actual:** Raises `RemediationFailed`, and `apply.call_count == 0`.
+
+**Customer impact:** Fixes that would succeed on the last allowed attempt are reported as failed, so devices stay non-compliant and need manual work. With `max_attempts=1` the engine does not work at all.
 
 **Root cause:** `range(1, self.max_attempts)` stops at `max_attempts - 1`.
 
@@ -196,6 +205,15 @@ get_risk_level(70)
 
 **Expected:** `"HIGH"` (the spec says 70–100 is HIGH).
 **Actual:** `"MEDIUM"`
+
+The same result is reached in the real flow, not only by passing 70 by hand. A common combination of findings adds up to exactly 70:
+```python
+from device_posture import calculate_risk_score, get_risk_level
+findings = [{"id": "a", "severity": "critical"},
+            {"id": "b", "severity": "medium"},
+            {"id": "c", "severity": "low"}]
+get_risk_level(calculate_risk_score(findings))   # score is 70 (correct), level is "MEDIUM" (wrong)
+```
 
 **Customer impact:** A device on the HIGH boundary is under-reported. Any alerting or prioritization triggered by HIGH risk will miss it.
 
@@ -314,3 +332,19 @@ RemediationEngine(Mock(), max_attempts=0).remediate("dev1", "fix")
 **Customer impact:** A configuration mistake is reported as a failed fix on the device instead of as a configuration error, which sends troubleshooting in the wrong direction.
 
 **Suggested fix:** Validate in `__init__`: `if max_attempts < 1: raise ValueError(...)`
+
+---
+
+## Open questions
+
+The spec does not define the expected behavior in these cases, so they are not reported as bugs. Each needs a decision from the product owner. The ones marked **Risk** can hurt the customer as the code stands today.
+
+| Function | Case | Current behavior | Question | Risk |
+|----------|------|------------------|----------|------|
+| `RemediationEngine` | `apply` raises an exception (e.g. `ConnectionError`) instead of returning `False` | No retry (`apply.call_count == 1`), no rollback, the raw `ConnectionError` escapes instead of `RemediationFailed` | Should an exception count as a failed attempt (retry, then rollback, then `RemediationFailed`)? | **High.** A network error partway through a fix leaves the device half-changed, with no rollback |
+| `is_scan_stale` | `last_scan_time` is in the future (clock skew or tampering) | `False` (fresh) | Should a future timestamp be treated as stale, or raise an error? | **High.** A scan time set a year ahead looks fresh for over a year, even after BUG-03 is fixed |
+| `is_os_version_supported` | `"abc"` vs `"13.0"` | `True` (supported) | Should an invalid version raise an error or be treated as unsupported? | **Medium.** Garbage data from a device is reported as compliant |
+| `is_os_version_supported` | `"13"` vs `"13.0"` | `False` | Is `"13"` equal to `"13.0"`? | Low |
+| `is_password_valid` | `"Äbcdefg1!"`, `"Abcdefg٣!"` | `True` | Do non-ASCII uppercase letters and digits count? | Low |
+| `is_password_valid` | `"Pa$s1😀😀"` | `False` | Is length counted in code points or in visible characters? | Low |
+| `get_risk_level` | `39.5`, `69.5` | `"LOW"`, `"MEDIUM"` | Can a score be a decimal? If so, which level does 39.5 belong to? `calculate_risk_score` only returns integers, so this is unlikely in the normal flow | Low |
