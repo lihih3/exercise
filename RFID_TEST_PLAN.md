@@ -1,13 +1,15 @@
-# Test Plan – RFID Door Access (interview practice)
+# Test Plan – RFID Door Access
 
 Based only on the task text. Door layout from the task's diagram:
 `1 -> 2 -> 3`, `1 -> 6 -> 10`, `1 -> 7 -> 11` (1 = main door).
 
-**Assumptions to confirm with the interviewer** (A3, A4 confirmed in session):
+**Clarified requirements:**
+- A3: A swipe exactly 2.000s after the last open is allowed.
+- A4: A denied swipe does not start the 2-second wait.
+
+**Assumptions (open questions):**
 - A1: "previous already opened" means opened by the **same tag**.
 - A2: The diagram means door 1 has three next doors: 2, 6, 7.
-- A3: Exactly 2.000s after the last open is allowed – confirmed.
-- A4: A denied swipe does NOT start the 2-second wait – confirmed.
 
 ## 1. What the feature does
 An RFID reader on each of 100 doors lets a tag open a door only if that tag

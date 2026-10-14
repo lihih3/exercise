@@ -1,6 +1,6 @@
 # RFID Door Access – implementation and automated tests
 
-Interview practice task: "design and implement this system (OOP)" and
+Scope: "design and implement this system (OOP)" and
 "Which Automation tests we can add here?"
 
 ## How to run
@@ -17,10 +17,12 @@ python3 -m pytest -v -k N2           # one test by its id
 - `AccessSystem.swipe(tag_id, door_id)` returns True (opens) or False (denied).
 - The clock is passed in, so tests use a fake clock: no `sleep`, no flaky timing.
 
-Decisions confirmed during the session (spec was silent):
-- "Previous door opened" means opened by the **same tag**.
+Clarified requirements:
 - A swipe **exactly 2.000s** after the last open is allowed.
 - Only a **real open** starts the 2-second wait; a denied swipe does not.
+
+Assumptions (open questions, spec is silent):
+- "Previous door opened" means opened by the **same tag**.
 - Unknown door id raises `ValueError`; an empty tag is denied.
 
 ## What was tested (full plan: `../RFID_TEST_PLAN.md`)

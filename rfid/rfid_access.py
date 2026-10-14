@@ -1,7 +1,7 @@
 """
 rfid_access.py
 ==============
-RFID door access system (interview practice task).
+RFID door access system.
 
 Rules (from the task):
   - One main door; each door knows its previous door and its next doors.
@@ -9,7 +9,7 @@ Rules (from the task):
     or this same door. The main door has no previous door.
   - Each employee can open at most one door every 2 seconds.
 
-Decisions confirmed during the session:
+Clarified requirements:
   - A swipe exactly 2.000s after the last open is allowed.
   - Only a real open starts the 2-second wait (a denied swipe does not).
 """
