@@ -46,3 +46,15 @@ def test_door_denied_when_previous_not_opened(system, clock, already_opened, tar
     open_path(system, clock, TAG, already_opened)
     clock.advance(2.0)
     assert system.swipe(TAG, target) is False
+
+
+def test_other_employees_history_does_not_open_door(system, clock):
+    open_path(system, clock, "employee-A", [1, 2])
+    open_path(system, clock, "employee-B", [1])
+    clock.advance(2.0)
+    assert system.swipe("employee-B", 3) is False
+
+
+@pytest.mark.parametrize("bad_tag", ["", None], ids=["empty-string", "none"])
+def test_empty_tag_is_denied_at_main_door(system, bad_tag):
+    assert system.swipe(bad_tag, 1) is False
