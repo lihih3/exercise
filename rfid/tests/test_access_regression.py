@@ -44,3 +44,8 @@ def test_denied_swipe_does_not_start_the_wait(system, clock):
     assert system.swipe(TAG, 3) is False  # denied: door 2 not opened yet
     clock.advance(1.0)  # 3s since last real open, 1s since the denied swipe
     assert system.swipe(TAG, 2) is True
+
+
+def test_unknown_door_raises_clear_error(system):
+    with pytest.raises(ValueError, match="Unknown door: 99"):
+        system.swipe(TAG, 99)
