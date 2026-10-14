@@ -36,3 +36,11 @@ def test_door_already_opened_by_tag_opens_again(system, clock, already_opened, t
 def test_two_employees_same_moment_both_open(system):
     assert system.swipe("employee-A", 1) is True
     assert system.swipe("employee-B", 1) is True
+
+
+def test_denied_swipe_does_not_start_the_wait(system, clock):
+    open_path(system, clock, TAG, [1])
+    clock.advance(2.0)
+    assert system.swipe(TAG, 3) is False  # denied: door 2 not opened yet
+    clock.advance(1.0)  # 3s since last real open, 1s since the denied swipe
+    assert system.swipe(TAG, 2) is True
