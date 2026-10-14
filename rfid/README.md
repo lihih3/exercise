@@ -7,7 +7,7 @@ Interview practice task: "design and implement this system (OOP)" and
 ```
 cd rfid
 python3 -m pip install pytest
-python3 -m pytest -v                 # all 14 tests
+python3 -m pytest -v                 # all 15 tests
 python3 -m pytest -m smoke -v        # 9 P0 tests only
 python3 -m pytest -v -k N2           # one test by its id
 ```
@@ -27,8 +27,9 @@ Decisions confirmed during the session (spec was silent):
 - **P0 / smoke (9):** main door opens, next door opens, 1.999s denied,
   skipping doors / wrong branch denied, another employee's history not used,
   empty tag denied.
-- **P1-P2 / regression (5):** exactly 2.0s and 2.001s allowed, re-opening a
-  door already opened, two employees at the same moment.
+- **P1-P2 / regression (6):** exactly 2.0s and 2.001s allowed, re-opening a
+  door already opened, two employees at the same moment, a denied swipe
+  does not start the 2-second wait (E4).
 
 ## Bugs found
 None. The implementation was written against the spec in this task, and every
@@ -41,8 +42,7 @@ confirming it fails.
 - Load / many swipes at scale: out of scope for this task and time.
 - Resetting "already opened" (e.g. daily): not in the spec; open question.
 - Lower-priority plan cases not automated yet: B5 (door ids 0/101),
-  N6 (unknown door error), E3 (same door twice within 2s), E4 (denied swipe
-  does not start the wait).
+  N6 (unknown door error), E3 (same door twice within 2s).
 
 ## OS
 Pure Python with no file, path or OS calls, so behavior is the same on
@@ -55,6 +55,6 @@ Windows, Linux and macOS. No platform-specific tests needed.
   be plugged in for richer reports and history.
 
 ## With more time
-- Automate the remaining plan cases (B5, N6, E3, E4).
+- Automate the remaining plan cases (B5, N6, E3).
 - Move the shared `open_path` helper into `conftest.py`.
 - Confirm the open questions with the product owner and update tests.
