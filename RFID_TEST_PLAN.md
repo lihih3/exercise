@@ -3,11 +3,11 @@
 Based only on the task text. Door layout from the task's diagram:
 `1 -> 2 -> 3`, `1 -> 6 -> 10`, `1 -> 7 -> 11` (1 = main door).
 
-**Assumptions to confirm with the interviewer** (marked "TBD" below):
+**Assumptions to confirm with the interviewer** (A3, A4 confirmed in session):
 - A1: "previous already opened" means opened by the **same tag**.
 - A2: The diagram means door 1 has three next doors: 2, 6, 7.
-- A3: Exactly 2.000s after the last open is allowed or not – TBD.
-- A4: Whether a denied swipe also starts the 2-second wait – TBD.
+- A3: Exactly 2.000s after the last open is allowed – confirmed.
+- A4: A denied swipe does NOT start the 2-second wait – confirmed.
 
 ## 1. What the feature does
 An RFID reader on each of 100 doors lets a tag open a door only if that tag
@@ -37,7 +37,7 @@ every 2 seconds per employee.
 | ID | Case | Expected | Priority |
 |---|---|---|---|
 | B1 | Opened 1, swipes 2 after 1.999s | Denied (too fast) | P0 |
-| B2 | Opened 1, swipes 2 after exactly 2.000s | TBD (A3) | P1 |
+| B2 | Opened 1, swipes 2 after exactly 2.000s | Opens (A3) | P1 |
 | B3 | Opened 1, swipes 2 after 2.001s | Opens | P1 |
 | B4 | Leaf door 3 (no next door), reached correctly | Opens | P1 |
 | B5 | Door ID 100 (last) vs 101 and 0 (don't exist) | 100 valid; 0/101 rejected | P2 |
@@ -58,7 +58,7 @@ every 2 seconds per employee.
 | E1 | Two employees swipe the same door at the same moment | Each decided on their own (limit is per employee) | P1 |
 | E2 | Opened 1, 2, 3, then goes back and swipes 2 | Opens (2 already opened) | P2 |
 | E3 | Same door swiped twice within 2s | Second denied | P2 |
-| E4 | Denied swipe, then valid swipe 1s later (A4) | TBD | P2 |
+| E4 | Denied swipe, then valid swipe 1s later (A4) | Opens (denied swipe does not start the wait) | P2 |
 
 ## 5. Not tested, and why
 - **Real RFID hardware and physical locks** – needs a hardware environment; the reader is mocked.
