@@ -14,7 +14,10 @@ Decisions confirmed during the session:
   - Only a real open starts the 2-second wait (a denied swipe does not).
 """
 
+import logging
 import time
+
+logger = logging.getLogger(__name__)
 
 MIN_SECONDS_BETWEEN_OPENS = 2.0
 
@@ -43,6 +46,7 @@ class AccessSystem:
         if door_id not in self._doors:
             raise ValueError(f"Unknown door: {door_id}")
         if not tag_id:
+            logger.warning("Access denied: empty tag at door %s", door_id)
             return False
 
         door = self._doors[door_id]
@@ -51,10 +55,14 @@ class AccessSystem:
 
         last = self._last_open.get(tag_id)
         if last is not None and now - last < MIN_SECONDS_BETWEEN_OPENS:
+            logger.warning("Access denied: tag %s at door %s, under %ss since last open",
+                           tag_id, door_id, MIN_SECONDS_BETWEEN_OPENS)
             return False
 
         is_main = door.previous is None
         if not (is_main or door.previous.door_id in opened or door_id in opened):
+            logger.warning("Access denied: tag %s at door %s, previous door %s not opened",
+                           tag_id, door_id, door.previous.door_id)
             return False
 
         self._opened.setdefault(tag_id, set()).add(door_id)
