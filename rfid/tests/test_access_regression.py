@@ -6,18 +6,11 @@ pytestmark = pytest.mark.regression
 TAG = "employee-A"
 
 
-def open_path(system, clock, tag, path):
-    """Open each door in order, 2s apart, so the time limit never blocks."""
-    for door_id in path:
-        clock.advance(2.0)
-        assert system.swipe(tag, door_id), f"setup failed at door {door_id}"
-
-
 @pytest.mark.parametrize(
     "wait", [2.0, 2.001], ids=["B2-exactly-2s-allowed", "B3-just-over-2s"]
 )
-def test_next_door_opens_at_or_after_2_seconds(system, clock, wait):
-    open_path(system, clock, TAG, [1])
+def test_next_door_opens_at_or_after_2_seconds(open_path, system, clock, wait):
+    open_path(TAG, [1])
     clock.advance(wait)
     assert system.swipe(TAG, 2) is True
 
@@ -27,8 +20,8 @@ def test_next_door_opens_at_or_after_2_seconds(system, clock, wait):
     [([1, 2], 2), ([1, 2, 3], 2)],
     ids=["H4-reopen-current-door", "E2-go-back-to-earlier-door"],
 )
-def test_door_already_opened_by_tag_opens_again(system, clock, already_opened, target):
-    open_path(system, clock, TAG, already_opened)
+def test_door_already_opened_by_tag_opens_again(open_path, system, clock, already_opened, target):
+    open_path(TAG, already_opened)
     clock.advance(2.0)
     assert system.swipe(TAG, target) is True
 
@@ -38,8 +31,8 @@ def test_two_employees_same_moment_both_open(system):
     assert system.swipe("employee-B", 1) is True
 
 
-def test_denied_swipe_does_not_start_the_wait(system, clock):
-    open_path(system, clock, TAG, [1])
+def test_denied_swipe_does_not_start_the_wait(open_path, system, clock):
+    open_path(TAG, [1])
     clock.advance(2.0)
     assert system.swipe(TAG, 3) is False  # denied: door 2 not opened yet
     clock.advance(1.0)  # 3s since last real open, 1s since the denied swipe

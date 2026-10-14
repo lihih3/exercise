@@ -37,3 +37,15 @@ def doors():
 @pytest.fixture
 def system(doors, clock):
     return AccessSystem(doors.values(), clock=clock)
+
+
+@pytest.fixture
+def open_path(system, clock):
+    """Open each door in order, 2s apart, so the time limit never blocks."""
+
+    def _open_path(tag, path):
+        for door_id in path:
+            clock.advance(2.0)
+            assert system.swipe(tag, door_id), f"setup failed at door {door_id}"
+
+    return _open_path

@@ -56,5 +56,4 @@ Windows, Linux and macOS. No platform-specific tests needed.
 
 ## With more time
 - Automate the remaining plan cases (B5, E3).
-- Move the shared `open_path` helper into `conftest.py`.
 - Confirm the open questions with the product owner and update tests.
